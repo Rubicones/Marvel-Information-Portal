@@ -28,10 +28,12 @@ class MarvelService {
     _transformData = (results) => {
         return {
             name: results.name,
+            id: results.id,
             description: results.description,
             thumbnail: `${results.thumbnail.path}.${results.thumbnail.extension}`,
             homepage: results.urls[0].url,
-            wiki: results.urls[1].url
+            wiki: results.urls[1].url,
+            comics: results.comics.items
         }
     }
 }

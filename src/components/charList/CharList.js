@@ -4,12 +4,12 @@ import MarvelService from '../services/MarvelDBService';
 
 class Char extends Component {
     render () {
-        const {thumbnail, name} = this.props.char
+        const {thumbnail, name, id} = this.props.char
         const picStyles = thumbnail === "http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg" ? 
                       {objectFit: "contain", alignItems: "start"} : {objectFit: "cover"}
 
         return (
-            <li className="char__item">
+            <li onClick={() => {this.props.onChoose(id)}} className="char__item">
                 <img src={thumbnail} style={picStyles} alt={name}/>
                 <div className="char__name">{name}</div>
             </li>
@@ -34,7 +34,7 @@ class CharList extends Component {
         .then(res => {
             res.forEach((char, i) => {
                 this.setState(({chars}) => ({
-                    chars: [...chars, <Char char={char} key={i}/>]
+                    chars: [...chars, <Char onChoose={(id) => {this.props.onChoose(id)}} char={char} key={i}/>]
                 }))
             })
             console.log(res)
