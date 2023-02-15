@@ -10,44 +10,31 @@ class CharInfo extends Component {
         char: null,
         loading: false,
         error: false,
-        comics: []
     }
 
     marvelService = new MarvelService()
 
-    componentDidUpdate = () => {
+    componentDidUpdate = (prevProps, prevState) => {
         const id = this.props.clickedChar;
         
-        if (!this.state.char || id !== this.state.char.id) {
-            this.updateChar(id)
+        if (id !== prevProps.clickedChar) {
+            this.rerollChar(id)
         }
 
     }
 
-    rerollChar = () => {
+    rerollChar = (id) => {
         this.setState({
             loading: true
         })
 
-        this.updateChar()
+        this.updateChar(id)
     }
 
     onCharLoaded = (char) => {
         this.setState({
             char: char,
-            loading: false
-        })
-
-        this.setState({
-            comics: char.comics.map(item => {
-                return(
-                    <li className="char__comics-item">
-                        <a href={item.resourceURI}>
-                            {item.name}
-                        </a>
-                    </li>
-                )
-            })
+            loading: false,
         })
 
     }
@@ -67,14 +54,20 @@ class CharInfo extends Component {
 
 
     render () {
-        const {loading, error, char, comics} = this.state
+        const {loading, error, char} = this.state
+        
         let errorMessage = error ? <ErrorMessage/> : null
         let spinner = loading ? <Spinner /> : null
-        const content = !(errorMessage || spinner) ? <View loading={loading} error={error} comics={comics} char={char}/> : null
+        let skeleton = !spinner && !error && !char ? <Skeleton/> : null 
+        const content = !(errorMessage || spinner || skeleton) ? <View char={char}/> : null
+        
 
         return (
             <div className="char__info">
-                {char ? content : <Skeleton/>}
+                {spinner}
+                {errorMessage}
+                {skeleton}
+                {content}
             </div>
         )
     }
@@ -83,13 +76,24 @@ class CharInfo extends Component {
 class View extends Component {
 
     render () {
-        const {loading, error, char, comics} = this.props
+        const {char} = this.props
+        const comics = char.comics.map((item, i) => {
+            return(
+                <li key={i} className="char__comics-item">
+                    <a href={item.resourceURI}>
+                        {item.name}
+                    </a>
+                </li>
+            )
+        })
 
-        
+        const picStyles = char.thumbnail === "http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg" ? 
+        {objectFit: "contain"} : {objectFit: "cover"}
+
         return (
             <>
                 <div className="char__basics">
-                    <img src={char.thumbnail} alt="abyss"/>
+                    <img src={char.thumbnail} style={picStyles} alt="abyss"/>
                     <div>
                         <div className="char__info-name">{char.name}</div>
                             <div className="char__btns">
@@ -107,7 +111,7 @@ class View extends Component {
                 </div>
                 <div className="char__comics">Comics:</div>
                 <ul className="char__comics-list">
-                    {comics}
+                    {comics.length > 0 ? comics : <h4>No comics found</h4>}
                 </ul>
             </>
         )
